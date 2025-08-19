@@ -23,15 +23,15 @@ jobs:
       # If your .sln has multiple projects, set working-directory or --project
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ../../ScrapingNseBulkDeals     # <-- change to your project folder (or delete line if at repo root)
+        working-directory: ./ScrapingNseBulkDeals     # <-- change to your project folder (or delete line if at repo root)
 
       - name: Build (Release)
         run: dotnet build --configuration Release --no-restore
-        working-directory: ../../ScrapingNseBulkDeals     # <-- change or remove
+        working-directory: ./ScrapingNseBulkDeals     # <-- change or remove
 
       - name: Run app
         run: dotnet run --configuration Release --no-build
-        working-directory: ../../ScrapingNseBulkDeals     # <-- change or remove
+        working-directory: ./ScrapingNseBulkDeals     # <-- change or remove
 
       # (Optional) save console output as an artifact for download
       # Uncomment this block if you want the log file
