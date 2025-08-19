@@ -1,28 +1,47 @@
-name: Run Console App
+name: Run C# Console App (Scheduled)
 
 on:
-  workflow_dispatch:   # allows manual trigger from GitHub Actions UI
-  # schedule:
-    #- cron: "0 9 * * *"   # every day at 9:00 AM UTC (adjust as needed)
+  # Runs by schedule (CRON is always in UTC)
+  schedule:
+    - cron: "0 3 * * *"         # every day at 03:00 UTC  (= 08:30 IST)
+  # Optional manual trigger from the Actions tab
+  workflow_dispatch:
 
 jobs:
-  run-app:
+  run-console:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'   # or the version you used
+          dotnet-version: '8.0.x'   # change if your app uses 7.0/6.0
 
+      # If your .sln has multiple projects, set working-directory or --project
       - name: Restore dependencies
         run: dotnet restore
+        working-directory: ../../ScrapingNseBulkDeals     # <-- change to your project folder (or delete line if at repo root)
 
-      - name: Build app
-        run: dotnet build --configuration Release
+      - name: Build (Release)
+        run: dotnet build --configuration Release --no-restore
+        working-directory: ../../ScrapingNseBulkDeals     # <-- change or remove
 
-      - name: Run console app
-        run: dotnet run --configuration Release
+      - name: Run app
+        run: dotnet run --configuration Release --no-build
+        working-directory: ../../ScrapingNseBulkDeals     # <-- change or remove
+
+      # (Optional) save console output as an artifact for download
+      # Uncomment this block if you want the log file
+      # - name: Run and capture output
+      #   run: dotnet run --configuration Release --no-build > output.txt
+      #   working-directory: ./MyConsoleApp
+      #
+      # - name: Upload output
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: console-output
+      #     path: MyConsoleApp/output.txt
+      #     retention-days: 7
