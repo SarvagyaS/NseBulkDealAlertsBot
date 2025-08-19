@@ -15,4 +15,10 @@
     <PackageReference Include="Selenium.WebDriver" Version="4.35.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Json\chat_subscribers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

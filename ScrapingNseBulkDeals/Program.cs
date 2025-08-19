@@ -10,7 +10,8 @@ using System.Text.Json;
 
 class Program
 {
-    public static string _filePath = "D:\\Practice\\ScrapingNseBulkDeals\\chat_subscribers.json";
+    //public static string _filePath = "D:\\Practice\\ScrapingNseBulkDeals\\chat_subscribers.json";
+    public static string _filePath = Path.Combine(AppContext.BaseDirectory, "Json", "chat_subscribers.json");
     public static string _botToken = "8338715441:AAHzWg01ulY9BP-FBZjGdk7JfgUH_FEg49o";
 
     static void Main(string[] args)
