@@ -14,7 +14,8 @@ namespace ScrapingNseBulkDeals
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             // 👇 Replace with your local SQL Server connection string
-            options.UseSqlServer(@"Server=(LocalDb)\MSSQLLocalDB;Database=BulkDeals;Trusted_Connection=True;");
+            //options.UseSqlServer(@"Server=(LocalDb)\MSSQLLocalDB;Database=BulkDeals;Trusted_Connection=True;");
+            options.UseSqlServer(@"Data Source=bulkdeals.cy9yymygw0nx.us-east-1.rds.amazonaws.com;Initial Catalog=BulkDeals;uid=admin;Password=Riya1234;TrustServerCertificate=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

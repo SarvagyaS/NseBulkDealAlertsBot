@@ -126,8 +126,8 @@ class Program
         var dealsToSend = new List<BulkDeal>();
         foreach (var item in allDeals)
         {
-            var buyCount = item.Value.Where(a => a.DealType == "BUY" && a.CreatedOn >= DateTime.Now.AddDays(-5)).ToList();
-            var sellCount = item.Value.Where(a => a.DealType == "SELL" && a.CreatedOn >= DateTime.Now.AddDays(-5)).ToList();
+            var buyCount = item.Value.Where(a => a.DealType == "BUY" && DateTime.Parse(a.TradedDate) >= DateTime.Now.AddDays(-10)).ToList();
+            var sellCount = item.Value.Where(a => a.DealType == "SELL" && DateTime.Parse(a.TradedDate) >= DateTime.Now.AddDays(-10)).ToList();
             if (buyCount?.Count - sellCount?.Count > 4)
             {
                 dealsToSend.Add(item.Value.FirstOrDefault());
