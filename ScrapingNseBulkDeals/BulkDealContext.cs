@@ -10,10 +10,10 @@ namespace ScrapingNseBulkDeals
     public class BulkDealContext : DbContext
     {
         public DbSet<BulkDeal> Deals { get; set; }
+        public DbSet<TelegramUser> TelegramUsers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            // 👇 Replace with your local SQL Server connection string
             //options.UseSqlServer(@"Server=(LocalDb)\MSSQLLocalDB;Database=BulkDeals;Trusted_Connection=True;");
             options.UseSqlServer(@"Data Source=bulkdeals.cy9yymygw0nx.us-east-1.rds.amazonaws.com;Initial Catalog=BulkDeals;uid=admin;Password=Riya1234;TrustServerCertificate=True");
         }
@@ -24,6 +24,10 @@ namespace ScrapingNseBulkDeals
             modelBuilder.Entity<BulkDeal>()
                 .HasIndex(b => new { b.TradedDate, b.SecurityName, b.ClientName, b.DealType, b.Quantity, b.Price, b.Symbol })
                 .IsUnique();
+
+            modelBuilder.Entity<TelegramUser>()
+                       .HasIndex(u => u.ChatId)
+                       .IsUnique(); // Ensure that the ChatId is unique to prevent duplicates
         }
     }
 }

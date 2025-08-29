@@ -1,6 +1,9 @@
 ﻿using Azure.Core;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
 using ScrapingNseBulkDeals;
@@ -32,6 +35,9 @@ class Program
         chromeOptions.AddUserProfilePreference("download.default_directory", _fileDownloadPath);
         chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
         chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
+        //chromeOptions.AddArgument("--headless");  // Optional: Run in headless mode (no UI)
+        chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
+        chromeOptions.AddArgument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
 
         using (IWebDriver driver = new ChromeDriver(chromeOptions))
         {
@@ -81,9 +87,17 @@ class Program
                 
                 
                 driver.Navigate().GoToUrl("https://www.nseindia.com/report-detail/display-bulk-and-block-deals");
-                Thread.Sleep(500);
+                // Scroll down slowly to make it appear more human
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                for (int i = 0; i < 3; i++)
+                {
+                    js.ExecuteScript("window.scrollBy(0, 500);");
+                    Thread.Sleep(new Random().Next(2000, 4000));  // Random delay to simulate human behavior
+                }
+
                 var LeaseID = driver.FindElement(By.Id( "HistBulkBlockDeals-download"));
                 driver.ExecuteJavaScript("arguments[0].click();", LeaseID);
+                Thread.Sleep(5000);
 
                 DirectoryInfo info = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory) + "\\Downloads");
                 var FileDownloaded = info.GetFiles().OrderByDescending(p => p.CreationTime).FirstOrDefault();
@@ -191,7 +205,7 @@ class Program
                     Console.WriteLine($"Skipped duplicate: {deal.SecurityName} on {deal.TradedDate}");
                 }
             }
-            db.Deals.AddRange(newDeals);
+            db.Deals.AddRange(newDeals.DistinctBy(a => new { a.ClientName, a.DealType, a.Quantity, a.SecurityName, a.Price }).ToList());
             db.SaveChanges();
         }
     }
@@ -217,7 +231,7 @@ class Program
     public static void NotifyUsers()
     {
         CollectSubscribersAsync().Wait();
-        var subscribers = LoadSubscribers();
+        var subscribers = LoadExistingSubscribers();
         var dealsToSend = AnalyseData();
         if (dealsToSend.Count>0)
         {
@@ -259,15 +273,7 @@ class Program
         // HTML-escape user content
         return System.Net.WebUtility.HtmlEncode(input ?? "");
     }
-    public static List<TelegramUser> LoadSubscribers()
-    {
-        if (!File.Exists(_filePath)) return new List<TelegramUser>();
-
-        var json = File.ReadAllText(_filePath);
-        return JsonSerializer.Deserialize<List<TelegramUser>>(json) ?? new List<TelegramUser>();
-    }
-
-
+   
     public static async Task SendHtmlMessageAsync(string chatId, string htmlMessage)
     {
         using (var http = new HttpClient())
@@ -285,7 +291,6 @@ class Program
 
     public static async Task CollectSubscribersAsync()
     {
-
         using (var http = new HttpClient())
         {
             var url = $"https://api.telegram.org/bot{_botToken}/getUpdates";
@@ -295,7 +300,10 @@ class Program
             using JsonDocument jsonDoc = JsonDocument.Parse(response);
             var updates = jsonDoc.RootElement.GetProperty("result");
 
-            var existing = LoadExistingSubscribers();
+            var existingSubscribers = LoadExistingSubscribers();
+
+            // Create a list of new subscribers to be added
+            var newSubscribers = new List<TelegramUser>();
 
             foreach (var update in updates.EnumerateArray())
             {
@@ -313,30 +321,41 @@ class Program
                     Username = username
                 };
 
-                if (!existing.Any(u => u.ChatId == chatId))
+                // Only add new subscribers to the list
+                if (!existingSubscribers.Any(u => u.ChatId == chatId))
                 {
-                    existing.Add(user);
-                    Console.WriteLine($"✅ Added: {firstName} ({username}) [{chatId}]");
+                    newSubscribers.Add(user);
+                    Console.WriteLine($"✅ New Subscriber: {firstName} ({username}) [{chatId}]");
                 }
             }
 
-            SaveSubscribers(existing);
+            // Bulk insert new subscribers into the database
+            if (newSubscribers.Any())
+            {
+                SaveSubscribersBulk(newSubscribers);
+            }
         }
     }
 
+
     private static List<TelegramUser> LoadExistingSubscribers()
     {
-        if (!File.Exists(_filePath)) return new List<TelegramUser>();
-
-        var json = File.ReadAllText(_filePath);
-        return JsonSerializer.Deserialize<List<TelegramUser>>(json) ?? new List<TelegramUser>();
+        using (var context = new BulkDealContext())
+        {
+            return context.TelegramUsers.ToList();
+        }
     }
 
-    private static void SaveSubscribers(List<TelegramUser> users)
+
+    private static void SaveSubscribersBulk(List<TelegramUser> newSubscribers)
     {
-        var json = JsonSerializer.Serialize(users, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(_filePath, json);
+        using (var context = new BulkDealContext())
+        {
+            context.AddRange(newSubscribers);
+            context.SaveChanges();
+        }
     }
+
 
 
 }
