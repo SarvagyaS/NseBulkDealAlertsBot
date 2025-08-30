@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScrapingNseBulkDeals;
 
@@ -11,9 +12,11 @@ using ScrapingNseBulkDeals;
 namespace ScrapingNseBulkDeals.Migrations
 {
     [DbContext(typeof(BulkDealContext))]
-    partial class BulkDealContextModelSnapshot : ModelSnapshot
+    [Migration("20250830153004_uniqueKey")]
+    partial class uniqueKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

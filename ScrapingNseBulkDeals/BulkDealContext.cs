@@ -22,7 +22,7 @@ namespace ScrapingNseBulkDeals
         {
             // Create unique index to prevent duplicates
             modelBuilder.Entity<BulkDeal>()
-                .HasIndex(b => new { b.TradedDate, b.SecurityName, b.ClientName, b.DealType, b.Quantity, b.Price, b.Symbol })
+                .HasIndex(b => new { b.TradedDate, b.SecurityName, b.ClientName, b.DealType, b.Quantity, b.Price, b.Symbol, b.CreatedOn })
                 .IsUnique();
 
             modelBuilder.Entity<TelegramUser>()

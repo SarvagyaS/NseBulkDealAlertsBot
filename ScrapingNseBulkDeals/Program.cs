@@ -182,7 +182,7 @@ class Program
     {
         using (var db = new BulkDealContext())
         {
-            var last10DaysDeals = db.Deals.Where(c => c.CreatedOn >= DateTime.Now.AddDays(-10)).ToList();
+            var last10DaysDeals = db.Deals.Where(c => c.CreatedOn >= DateTime.Now.AddDays(-15)).ToList();
             var newDeals = new List<BulkDeal>();
             foreach (var deal in scrapedDeals)
             {
@@ -196,7 +196,7 @@ class Program
 
                 if (!exists)
                 {
-
+                    deal.CreatedOn = DateTime.Now;
                     newDeals.Add(deal);
                     Console.WriteLine($"Added: {deal.SecurityName} on {deal.TradedDate}");
                 }
