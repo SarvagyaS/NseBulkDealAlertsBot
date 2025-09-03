@@ -2,8 +2,8 @@ name: Run C# Console App (Scheduled)
 
 on:
   # Runs by schedule (CRON is always in UTC)
-  schedule:
-    - cron: "0 3 * * *"         # every day at 03:00 UTC  (= 08:30 IST)
+#  schedule:
+ #   - cron: "0 3 * * *"         # every day at 03:00 UTC  (= 08:30 IST)
   # Optional manual trigger from the Actions tab
   workflow_dispatch:
 
